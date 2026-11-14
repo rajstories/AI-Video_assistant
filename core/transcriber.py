@@ -33,8 +33,33 @@ def transcribe_chunk_whisper(chunk_path: str) -> str:
 
     model = load_model()  
 
-    result = model.transcribe(chunk_path, task="transcribe")  
-    return result["text"]  
+    result = model.transcribe(
+        chunk_path,
+        task="transcribe",
+        condition_on_previous_text=False,
+        no_speech_threshold=0.6,
+        logprob_threshold=-1.0,
+        compression_ratio_threshold=2.4,
+    )
+    # Whisper can invent phrases on silence/noise. Check segment-level
+    # probabilities and repetition before accepting text as meeting evidence.
+    # These are heuristics, not substitutes for VAD and a labeled evaluation.
+    kept = []
+    for segment in result.get("segments", []):
+        phrase = segment.get("text", "").strip()
+        if not phrase:
+            continue
+        silence = segment.get("no_speech_prob", 0)
+        logprob = segment.get("avg_logprob", 0)
+        compression = segment.get("compression_ratio", 1)
+        if silence > 0.6 and logprob < -1.0:
+            continue
+        if compression > 2.4:
+            continue
+        kept.append(phrase)
+    # Return only validated segments; never fall back to model-level result["text"]
+    # because it may reintroduce segments explicitly rejected above.
+    return " ".join(kept)
 
 
 def _send_to_sarvam(piece_path: str) -> str:
