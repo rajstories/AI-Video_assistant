@@ -1,5 +1,6 @@
 import streamlit as st
 import time
+from html import escape
 from dotenv import load_dotenv
 from utils.audio_processor import process_input
 from core.transcriber import transcribe_all
@@ -435,7 +436,7 @@ if st.session_state.result:
     <div class="card">
         <div class="card-title">📌 Session Title</div>
         <div style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;color:var(--text)">
-            {r['title']}
+            {escape(str(r['title']))}
         </div>
     </div>""", unsafe_allow_html=True)
 
@@ -446,12 +447,12 @@ if st.session_state.result:
         st.markdown(f"""
         <div class="card">
             <div class="card-title">📋 Summary</div>
-            <div class="card-content">{r['summary']}</div>
+            <div class="card-content">{escape(str(r['summary']))}</div>
         </div>""", unsafe_allow_html=True)
 
     with col2:
         with st.expander("📝 Full Transcript", expanded=False):
-            st.markdown(f'<div class="transcript-box">{r["transcript"]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="transcript-box">{escape(str(r['transcript']))}</div>', unsafe_allow_html=True)
 
     # Second row: action items | decisions | questions
     c1, c2, c3 = st.columns(3, gap="medium")
@@ -460,21 +461,21 @@ if st.session_state.result:
         st.markdown(f"""
         <div class="card">
             <div class="card-title">✅ Action Items</div>
-            <div class="card-content">{r['action_items']}</div>
+            <div class="card-content">{escape(str(r['action_items']))}</div>
         </div>""", unsafe_allow_html=True)
 
     with c2:
         st.markdown(f"""
         <div class="card">
             <div class="card-title">🔑 Key Decisions</div>
-            <div class="card-content">{r['key_decisions']}</div>
+            <div class="card-content">{escape(str(r['key_decisions']))}</div>
         </div>""", unsafe_allow_html=True)
 
     with c3:
         st.markdown(f"""
         <div class="card">
             <div class="card-title">❓ Open Questions</div>
-            <div class="card-content">{r['open_questions']}</div>
+            <div class="card-content">{escape(str(r['open_questions']))}</div>
         </div>""", unsafe_allow_html=True)
 
     st.markdown("---")
@@ -490,13 +491,13 @@ if st.session_state.result:
                 chat_html += f"""
                 <div class="chat-msg" style="align-items:flex-end">
                     <span class="chat-label user-label">You</span>
-                    <div class="chat-bubble user-bubble">{msg['content']}</div>
+                    <div class="chat-bubble user-bubble">{escape(str(msg['content']))}</div>
                 </div>"""
             else:
                 chat_html += f"""
                 <div class="chat-msg" style="align-items:flex-start">
                     <span class="chat-label bot-label">🤖 Assistant</span>
-                    <div class="chat-bubble bot-bubble">{msg['content']}</div>
+                    <div class="chat-bubble bot-bubble">{escape(str(msg['content']))}</div>
                 </div>"""
         chat_html += '</div>'
         st.markdown(chat_html, unsafe_allow_html=True)
